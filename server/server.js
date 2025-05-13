@@ -1,45 +1,34 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
-import helmet from "helmet";
-import morgan from "morgan";
+const express = require("express");
+const connectDB = require("./config/db");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const authRoutes = require("./routes/auth.routes");
+const quizRoutes = require("./routes/quiz.routes");
+const userRoutes = require("./routes/user.routes");
 
-import quizRoutes from "./routes/quizRoutes.js";
-import authRoutes from "./routes/auth.js";
-import errorHandler from "./middleware/errorHandler.js";
-
-/* CONFIGURATION */
+// get the configuration setting from the environment variables
 dotenv.config();
+connectDB();
+
+// Create app instance
 const app = express();
-
-// Middleware
+// to parse incoming JSON data from HTTP requests
 app.use(express.json());
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-app.use(cookieParser());
+// to allow the server to accept the requests from different origins
+app.use(cors());
 
-/* ROUTERS */
-app.use("/api/quizzes", quizRoutes);
+// define port if not in the env file
+const PORT = process.env.PORT || 5000;
+
+// Routes need to be create after this
+// auth route
 app.use("/api/auth", authRoutes);
+// quiz route
+app.use("/api/quiz", quizRoutes);
+// user route
+app.use("/api/user", userRoutes)
 
-// Error handling middleware
-app.use(errorHandler);
-
-/* MONGOOSE SETUP */
-const PORT = process.env.PORT || 9000;
-mongoose
-  .connect(process.env.DATABASE_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
-  })
-  .catch((error) => console.log(`${error} did not connect`));
+// check whether the application is working fine or not
+app.listen(PORT, () => {
+  console.log("Server is running on " + PORT);
+});
