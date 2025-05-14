@@ -7,7 +7,7 @@ const register = async (req, res) => {
   let existedUser = await UserModel.findOne({ email });
   if (existedUser)
     return res
-      .status(409)
+      .status(400)
       .send({
         message: "User is already exist in the system, Please try login.",
       });
